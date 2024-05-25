@@ -426,7 +426,9 @@ export function setup(grunt: IGrunt) {
           level: 0
         },
         files: [
-          { expand: true, cwd: 'classes/', src: 'doppio/**/*.class', dest: ''}
+          { expand: true, cwd: 'classes/', src: 'doppio/**/*.class', dest: ''},
+          // @stu need this to compile the AWT canvas stuff
+          { expand: true, cwd: 'classes/', src: 'awt/**/*.class', dest: 'classes/'}
         ]
       }
     },
@@ -558,7 +560,8 @@ export function setup(grunt: IGrunt) {
   grunt.loadTasks('tasks');
 
   grunt.registerMultiTask('launcher', 'Creates a launcher for the given CLI release.', function() {
-    var launcherPath: string, exePath: string, options = this.options();
+    // @stu I have no recollection of why I added undefined here
+    var launcherPath: string, exePath: string, options = this.options(undefined as any);
     launcherPath = options.dest;
     exePath = options.src;
 
@@ -629,7 +632,7 @@ export function setup(grunt: IGrunt) {
       grunt.task.run('compress:doppio');
     } else {
       const zipModified = fs.statSync('vendor/java_home/lib/doppio.jar').mtime;
-      const filesModified = glob.sync('classes/doppio/**/*.java').map((file) => fs.statSync(file).mtime).filter((modTime) => modTime > zipModified);
+      const filesModified = [...glob.sync('classes/doppio/**/*.java'),...glob.sync('classes/awt/**/*.java')].map((file) => fs.statSync(file).mtime).filter((modTime) => modTime > zipModified);
       if (filesModified.length > 0) {
         grunt.task.run('compress:doppio');
       }

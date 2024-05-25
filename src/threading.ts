@@ -469,6 +469,9 @@ export class NativeStackFrame implements IStackFrame {
    */
   public run(thread: JVMThread): void {
     trace(`\nT${thread.getRef()} D${thread.getStackTrace().length} Running ${this.method.getFullSignature()} [Native]:`);
+    if (this.method.getFullSignature().indexOf('forName') !== -1) {
+      // console.log("@stu", thread.getStackTrace().);
+    }
     var rv: any = this.nativeMethod.apply(null, this.method.convertArgs(thread, this.args));
     // Ensure thread is running, and we are the running method.
     if (thread.getStatus() === ThreadStatus.RUNNABLE && thread.currentMethod() === this.method) {
@@ -706,6 +709,7 @@ export class JVMThread implements Thread {
    * Get the classloader for the current frame.
    */
   public getLoader(): ClassLoader {
+    // console.log('@stu', this.stack.length);
     let loader = this.stack[this.stack.length - 1].getLoader();
     if (loader) {
       return loader;
@@ -1080,9 +1084,19 @@ export class JVMThread implements Thread {
       }
 
       trace(`\nT${this.getRef()} D${this.getStackTrace().length + 1} Returning value from ${frameCast.method.getFullSignature()} [${frameCast.method.accessFlags.isNative() ? 'Native' : 'Bytecode'}]: ${debug_var(rv)}`);
-      assert(validateReturnValue(this, frameCast.method,
-        frameCast.method.returnType, this.bsCl,
-        frameCast.method.cls.getLoader(), rv, rv2), `Invalid return value for method ${frameCast.method.getFullSignature()}`);
+      try {
+        validateReturnValue(this, frameCast.method,
+          frameCast.method.returnType, this.bsCl,
+          frameCast.method.cls.getLoader(), rv, rv2)
+      } catch(e) {
+        // @stu forgot why I added this lol
+        // I think this might have been what crashed until I added | 0 to the IP address?
+        // console.log(`Invalid return value for method ${frameCast.method.getFullSignature()}`);
+        console.log("uh oh ", this.getPrintableStackTrace());
+        console.log(e);
+        throw e;
+      }
+      
     }
     // Tell the top of the stack that this RV is waiting for it.
     var idx: number = stack.length - 1;

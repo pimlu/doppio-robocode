@@ -29,9 +29,10 @@ export enum LogLevel {
   DEBUG = 5,
   ERROR = 1
 }
-export let logLevel: LogLevel = LogLevel.ERROR;
+// @stu changed this to default to trace
+export let logLevel: LogLevel = LogLevel.TRACE;
 export function setLogLevel(level: LogLevel): void {
-  logLevel = level;
+  logLevel = LogLevel.TRACE;
 }
 
 function log(level: number, msgs: any[]): void {

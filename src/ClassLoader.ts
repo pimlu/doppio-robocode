@@ -338,6 +338,13 @@ export abstract class ClassLoader {
    * If the program explicitly called loadClass, then we throw the ClassNotFoundException.
    */
   protected throwClassNotFoundException(thread: JVMThread, typeStr: string, explicit: boolean): void {
+    if ((typeStr as any).includes('BulletSnapshot')) {
+      console.log("@stu", `Cannot load class: ${ext_classname(typeStr)}`);
+      // console.log("@stu", ((this as any).classpath as IClasspathItem[]).map(e => e.getPath));
+      console.log("@stu pls");
+      console.log("@stu", Object.keys(this.loadedClasses).filter(s => s.indexOf('robocode') !== -1));
+      // console.log("@stu plz");
+    }
     thread.throwNewException(explicit ? 'Ljava/lang/ClassNotFoundException;' : 'Ljava/lang/NoClassDefFoundError;', `Cannot load class: ${ext_classname(typeStr)}`);
   }
 
@@ -455,8 +462,16 @@ export class BootstrapClassLoader extends ClassLoader {
           break searchLoop;
       }
     }
-
+    // @stu debugging here
+    // if (typeStr.indexOf('BulletSnapshot') !== -1) {
+    //   console.log(typeStr, clsFilePath, cPathLen, toSearch, this.classpath && this.classpath.map(cp => cp.getPath()));
+    //   console.log("jar", this.classpath && this.classpath.filter(cp => cp.getPath().indexOf('doppio.jar') !== -1));
+    // }
     asyncFind<IClasspathItem>(toSearch, (pItem: IClasspathItem, callback: (success: boolean) => void): void => {
+      
+    // if (typeStr.indexOf('CanvasGraphicsEnvironment') !== -1) {
+    //   console.log('find', pItem);
+    // }
       pItem.loadClass(clsFilePath, (err: Error, data?: Buffer) => {
         if (err) {
           callback(false);

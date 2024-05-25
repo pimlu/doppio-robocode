@@ -57,7 +57,9 @@ export default function (): any {
       logging.error('Out of addresses');
       next_host_address = 0xF0000000;
     }
-    return next_host_address;
+    // @stu this is a bugfix to make sure this address fits in an integer.
+    // avoids a crash
+    return next_host_address | 0;
   }
 
   function pack_address(address: number[]): number {

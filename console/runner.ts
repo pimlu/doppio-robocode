@@ -5,9 +5,10 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as JDKInfo from '../vendor/java_home/jdk.json';
 // Makes our stack traces point to the TypeScript source code lines.
-require('source-map-support').install({
-  handleUncaughtExceptions: true
-});
+// @stu commented because this just breaks for me
+// require('source-map-support').install({
+//   handleUncaughtExceptions: true
+// });
 
 function doneCb(status: number): void {
   process.exit(status);

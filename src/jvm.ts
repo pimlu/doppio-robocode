@@ -728,6 +728,8 @@ class JVM {
    * [Private] Same as reset_system_properties, but called by the constructor.
    */
   private _initSystemProperties(bootstrapClasspath: string[], javaClassPath: string[], javaHomePath: string, tmpDir: string, opts: {[name: string]: string}): void {
+    // @stu shows classpaths
+    // console.log(javaClassPath, javaHomePath, bootstrapClasspath);
     this.systemProperties = merge({
       'java.class.path': javaClassPath.join(':'),
       'java.home': javaHomePath,

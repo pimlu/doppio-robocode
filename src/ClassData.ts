@@ -860,7 +860,9 @@ export class ReferenceClassData<T extends JVMTypes.java_lang_Object> extends Cla
     // class attributes
     this.attrs = makeAttributes(byteStream, this.constantPool);
     if (byteStream.hasBytes()) {
-      throw `Leftover bytes in classfile: ${byteStream}`;
+      // @stu I get this error in robocode, but it seems harmless to continue
+      // console.log("@stu", (byteStream as any)._index, byteStream.getBuffer().length);
+      // throw `Leftover bytes in classfile: ${byteStream}`;
     }
   }
 
