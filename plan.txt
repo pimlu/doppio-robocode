@@ -1,0 +1,23 @@
+JFrame - link to window
+    .add(canvas) does the magic
+    other funcs do nothing
+    or maybe even, complete no-op and it relies on the canvas constructor?
+
+Canvas - canvas in main window
+    .update(Graphics g)
+        g points to iframe canvas
+        at the end of this, gets blit
+    .createBufferStrategy()
+    .getBufferStrategy()
+        .getGraphics()
+    robocode uses both graphics... probably make them point to the same thing?
+        and make BufferStrategy.show() only happen once
+
+BufferedImage - canvas in iframe
+    inherits from Image
+    .getGraphics() -> Graphics2D
+Graphics2D - CanvasRenderingContext2D
+    inherits from Graphics... hope that works
+
+
+filesystem images?
