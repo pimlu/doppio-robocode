@@ -117,6 +117,8 @@ class JVM {
       JVM.registerNativeModule(require('./natives/java_nio').default);
       JVM.registerNativeModule(require('./natives/java_security').default);
       JVM.registerNativeModule(require('./natives/java_util').default);
+      // @stu
+      // JVM.registerNativeModule(require('./natives/javax_swing').default);
       JVM.registerNativeModule(require('./natives/sun_font').default);
       JVM.registerNativeModule(require('./natives/sun_management').default);
       JVM.registerNativeModule(require('./natives/sun_misc').default);
@@ -729,7 +731,7 @@ class JVM {
    */
   private _initSystemProperties(bootstrapClasspath: string[], javaClassPath: string[], javaHomePath: string, tmpDir: string, opts: {[name: string]: string}): void {
     // @stu shows classpaths
-    // console.log(javaClassPath, javaHomePath, bootstrapClasspath);
+    console.log("@stu", javaClassPath, javaHomePath, bootstrapClasspath);
     this.systemProperties = merge({
       'java.class.path': javaClassPath.join(':'),
       'java.home': javaHomePath,
@@ -754,7 +756,7 @@ class JVM {
       'java.vm.name': 'DoppioJVM 32-bit VM',
       'java.vm.version': pkg.version,
       'java.vm.vendor': 'PLASMA@UMass',
-      'java.awt.headless': (are_in_browser()).toString(), // true if we're using the console frontend
+      'java.awt.headless': 'false',//(are_in_browser()).toString(), // true if we're using the console frontend
       'java.awt.graphicsenv': 'classes.awt.CanvasGraphicsEnvironment',
       'jline.terminal': 'jline.UnsupportedTerminal', // we can't shell out to `stty`,
       'sun.arch.data.model': '32', // Identify as 32-bit, because that's how we act.

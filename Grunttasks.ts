@@ -383,7 +383,7 @@ export function setup(grunt: IGrunt) {
       'examples': {
         files: [{
           expand: true,
-          cwd: "build/release",
+          cwd: "build/dev",
           src: ["*.js", "*.js.map", "natives/**/*.js*", "vendor/**/*"],
           dest: "docs/examples/doppio"
         }, {
@@ -399,7 +399,7 @@ export function setup(grunt: IGrunt) {
       default: {
         files: [{
           expand: true,
-          src: ['classes/+(awt|demo|test|util)/*.java', 'classes/doppio/**/*.java'],
+          src: ['classes/+(awt|demo|test|util)/*.java', 'classes/javax/swing/*.java', 'classes/doppio/**/*.java'],
           ext: '.class'
         }]
       },
@@ -428,7 +428,8 @@ export function setup(grunt: IGrunt) {
         files: [
           { expand: true, cwd: 'classes/', src: 'doppio/**/*.class', dest: ''},
           // @stu need this to compile the AWT canvas stuff
-          { expand: true, cwd: 'classes/', src: 'awt/**/*.class', dest: 'classes/'}
+          { expand: true, cwd: 'classes/', src: 'awt/**/*.class', dest: 'classes/'},
+          { expand: true, cwd: 'classes/patches/', src: '**/*.class', dest: ''}
         ]
       }
     },
@@ -632,7 +633,8 @@ export function setup(grunt: IGrunt) {
       grunt.task.run('compress:doppio');
     } else {
       const zipModified = fs.statSync('vendor/java_home/lib/doppio.jar').mtime;
-      const filesModified = [...glob.sync('classes/doppio/**/*.java'),...glob.sync('classes/awt/**/*.java')].map((file) => fs.statSync(file).mtime).filter((modTime) => modTime > zipModified);
+      // @stu need javax in here
+      const filesModified = [...glob.sync('classes/doppio/**/*.java'),...glob.sync('classes/awt/**/*.java'),...glob.sync('classes/patches/**/*.java')].map((file) => fs.statSync(file).mtime).filter((modTime) => modTime > zipModified);
       if (filesModified.length > 0) {
         grunt.task.run('compress:doppio');
       }
@@ -800,7 +802,7 @@ export function setup(grunt: IGrunt) {
      'listings:release']);
 
   grunt.registerTask('examples',
-    ['release',
+    ['dev',
      'newer:javac:examples',
      'copy:examples',
      'listings:examples',
