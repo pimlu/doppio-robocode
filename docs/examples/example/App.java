@@ -21,6 +21,7 @@ class MyCanvas extends Canvas {
   }
 	public void paint(Graphics g_) {
 		Graphics2D g = (Graphics2D) g_;
+		Thread.dumpStack();
 		g.drawOval(10, 10, 100, 200);
 	}
 }

@@ -709,7 +709,9 @@ export class JVMThread implements Thread {
    * Get the classloader for the current frame.
    */
   public getLoader(): ClassLoader {
-    // console.log('@stu', this.stack.length);
+    if (this.stack.length === 0) {
+      throw new Error("getLoader() saw empty stack? This usually happens when it can't find the main class")
+    }
     let loader = this.stack[this.stack.length - 1].getLoader();
     if (loader) {
       return loader;

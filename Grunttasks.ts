@@ -399,7 +399,7 @@ export function setup(grunt: IGrunt) {
       default: {
         files: [{
           expand: true,
-          src: ['classes/+(awt|demo|test|util)/*.java', 'classes/javax/swing/*.java', 'classes/doppio/**/*.java'],
+          src: ['classes/+(awt|demo|test|util)/*.java', 'classes/doppio/**/*.java', 'classes/patches/**/*.java'],
           ext: '.class'
         }]
       },
@@ -461,7 +461,8 @@ export function setup(grunt: IGrunt) {
       examples: {
         options: {
           base: 'docs/examples',
-          keepalive: true
+          keepalive: true,
+          hostname: '0.0.0.0'
         }
       }
     },
@@ -635,7 +636,8 @@ export function setup(grunt: IGrunt) {
       const zipModified = fs.statSync('vendor/java_home/lib/doppio.jar').mtime;
       // @stu need javax in here
       const filesModified = [...glob.sync('classes/doppio/**/*.java'),...glob.sync('classes/awt/**/*.java'),...glob.sync('classes/patches/**/*.java')].map((file) => fs.statSync(file).mtime).filter((modTime) => modTime > zipModified);
-      if (filesModified.length > 0) {
+      // @stu actually this check isn't working idk
+      if (true || filesModified.length > 0) {
         grunt.task.run('compress:doppio');
       }
     }
@@ -808,6 +810,14 @@ export function setup(grunt: IGrunt) {
      'listings:examples',
      "connect:examples"
     ]);
+
+  grunt.registerTask('build-examples',
+    ['dev',
+     'newer:javac:examples',
+     'copy:examples',
+     'listings:examples',
+    ]);
+
 
   grunt.registerTask('dist',
     [

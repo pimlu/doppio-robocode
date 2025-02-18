@@ -345,6 +345,7 @@ export abstract class ClassLoader {
       console.log("@stu", Object.keys(this.loadedClasses).filter(s => s.indexOf('robocode') !== -1));
       // console.log("@stu plz");
     }
+    console.log("@stu", typeStr);
     thread.throwNewException(explicit ? 'Ljava/lang/ClassNotFoundException;' : 'Ljava/lang/NoClassDefFoundError;', `Cannot load class: ${ext_classname(typeStr)}`);
   }
 
@@ -469,13 +470,13 @@ export class BootstrapClassLoader extends ClassLoader {
     }
     // @stu debugging here
     if (typeStr.indexOf('Frame') !== -1) {
-      console.log(typeStr, clsFilePath, cPathLen, toSearch, this.classpath && this.classpath.map(cp => cp.getPath()));
-      console.log("jar", this.classpath && this.classpath.filter(cp => cp.getPath().indexOf('doppio.jar') !== -1));
+      // console.log("@stu jarstuff", typeStr, clsFilePath, cPathLen, toSearch, this.classpath && this.classpath.map(cp => cp.getPath()));
+      // console.log("@stu jar", this.classpath && this.classpath.filter(cp => cp.getPath().indexOf('doppio.jar') !== -1));
     }
     asyncFind<IClasspathItem>(toSearch, (pItem: IClasspathItem, callback: (success: boolean) => void): void => {
       
       if (typeStr.indexOf('Frame') !== -1) {
-        console.log('find', pItem);
+        //console.log('@stu find', pItem);
       }
       pItem.loadClass(clsFilePath, (err: Error, data?: Buffer) => {
         if (err) {
