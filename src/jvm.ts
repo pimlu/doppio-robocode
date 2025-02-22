@@ -760,7 +760,8 @@ class JVM {
       'java.awt.graphicsenv': 'classes.awt.CanvasGraphicsEnvironment',
       'jline.terminal': 'jline.UnsupportedTerminal', // we can't shell out to `stty`,
       'sun.arch.data.model': '32', // Identify as 32-bit, because that's how we act.
-      'sun.jnu.encoding': "UTF-8" // Determines how Java parses command line options.
+      'sun.jnu.encoding': "UTF-8", // Determines how Java parses command line options.
+      'javax.accessibility.assistive_technologies': ''
     }, opts);
   }
 
