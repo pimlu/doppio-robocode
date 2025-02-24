@@ -24,7 +24,8 @@ public class CanvasGraphicsEnvironment extends SunGraphicsEnvironment {
 
         g.postDrawSync = new Runnable() {
             public void run() {
-                throw new UnsupportedOperationException("TODO");
+                BufferedImage result = (BufferedImage) g.getImage();
+                img.setData(result.getRaster());
             }
         };
         return g;

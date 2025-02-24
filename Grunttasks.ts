@@ -393,6 +393,20 @@ export function setup(grunt: IGrunt) {
           src: "node_modules/browserfs/dist/browserfs.min.*",
           dest: "docs/examples/doppio"
         }]
+      },
+      'robocode': {
+        files: [{
+          expand: true,
+          cwd: "build/dev",
+          src: ["*.js", "*.js.map", "natives/**/*.js*", "vendor/**/*"],
+          dest: "docs/robocode/doppio"
+        }, {
+          expand: true,
+          flatten: true,
+          cwd: ".",
+          src: "node_modules/browserfs/dist/browserfs.min.*",
+          dest: "docs/robocode/doppio"
+        }]
       }
     },
     javac: {
@@ -461,8 +475,13 @@ export function setup(grunt: IGrunt) {
       examples: {
         options: {
           base: 'docs/examples',
-          keepalive: true,
-          hostname: '0.0.0.0'
+          keepalive: true
+        }
+      },
+      robocode: {
+        options: {
+          base: 'docs/robocode',
+          keepalive: true
         }
       }
     },
@@ -816,6 +835,13 @@ export function setup(grunt: IGrunt) {
      'newer:javac:examples',
      'copy:examples',
      'listings:examples',
+    ]);
+  
+  grunt.registerTask('robocode',
+    ['dev',
+      'copy:robocode',
+      'listings:robocode',
+      "connect:robocode"
     ]);
 
 

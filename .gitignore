@@ -46,3 +46,6 @@ tasks/test/*.d.ts
 /docs/examples/doppio
 /docs/examples/listings.json
 
+/docs/robocode/doppio
+/docs/robocode/listings.json
+

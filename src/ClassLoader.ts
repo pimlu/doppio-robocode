@@ -338,14 +338,15 @@ export abstract class ClassLoader {
    * If the program explicitly called loadClass, then we throw the ClassNotFoundException.
    */
   protected throwClassNotFoundException(thread: JVMThread, typeStr: string, explicit: boolean): void {
-    if ((typeStr as any).includes('BulletSnapshot')) {
-      console.log("@stu", `Cannot load class: ${ext_classname(typeStr)}`);
-      // console.log("@stu", ((this as any).classpath as IClasspathItem[]).map(e => e.getPath));
-      console.log("@stu pls");
-      console.log("@stu", Object.keys(this.loadedClasses).filter(s => s.indexOf('robocode') !== -1));
-      // console.log("@stu plz");
-    }
-    console.log("@stu CNF", typeStr);
+    // if ((typeStr as any).includes('BulletSnapshot')) {
+    //   console.log("@stu", `Cannot load class: ${ext_classname(typeStr)}`);
+    //   // console.log("@stu", ((this as any).classpath as IClasspathItem[]).map(e => e.getPath));
+    //   console.log("@stu pls");
+    //   console.log("@stu", Object.keys(this.loadedClasses).filter(s => s.indexOf('robocode') !== -1));
+    //   // console.log("@stu plz");
+    // }
+
+    // console.log("@stu CNF", typeStr);
     thread.throwNewException(explicit ? 'Ljava/lang/ClassNotFoundException;' : 'Ljava/lang/NoClassDefFoundError;', `Cannot load class: ${ext_classname(typeStr)}`);
   }
 

@@ -46,9 +46,9 @@ function listings(grunt: IGrunt) {
     let output = `build/${target}/listings.json`;
     let folder = `build/${target}`;
     // Dirty hack for now.
-    if (target === 'examples') {
-      output = "docs/examples/listings.json";
-      folder = "docs/examples";
+    if (target === 'examples' || target == 'robocode') {
+      output = `docs/${target}/listings.json`;
+      folder = `docs/${target}`;
     }
     grunt.file.write(output, JSON.stringify(generateListings(folder, ['.git', 'node_modules'])));
   });
