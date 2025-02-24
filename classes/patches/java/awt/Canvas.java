@@ -12,6 +12,7 @@ public class Canvas extends Component {
    private BrowserCanvas browserCanvas;
    public Canvas() {
       browserCanvas = new BrowserCanvas();
+      setName("canvas");
    }
 
    private CanvasBufferStrategy repaintStrat;
@@ -71,5 +72,4 @@ public class Canvas extends Component {
       }
       browserCanvas.mount();
    }
-    
 }

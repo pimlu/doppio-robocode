@@ -2,6 +2,7 @@ package classes.awt;
 
 import classes.awt.CanvasGraphics2D;
 import java.awt.Image;
+import java.awt.event.ComponentListener;
 
 public class BrowserCanvas {
     CanvasGraphics2D g;
@@ -24,4 +25,8 @@ public class BrowserCanvas {
     public Image getImage() {
         return getGraphics().getImage();
     }
+
+    public synchronized void addComponentListener(ComponentListener l) {}
+    public synchronized void removeComponentListener(ComponentListener l) {}
+    
 }

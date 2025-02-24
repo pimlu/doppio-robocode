@@ -224,17 +224,17 @@ public class BrowserToolkit extends SunToolkit
 
     public int getScreenHeight()
         throws HeadlessException {
-        throw new HeadlessException();
+        return getScreenSize().height;
     }
 
     public int getScreenWidth()
         throws HeadlessException {
-        throw new HeadlessException();
+        return getScreenSize().width;
     }
 
     public Dimension getScreenSize()
         throws HeadlessException {
-        throw new HeadlessException();
+        return new Dimension();
     }
 
     public Insets getScreenInsets(GraphicsConfiguration gc)
