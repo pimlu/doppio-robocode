@@ -18,17 +18,20 @@ import java.awt.Graphics;
 public class JFrame {
     public JFrame(String title) {}
 
+    Canvas canvas;
+
     public Component add(Component comp) {
         if (comp instanceof Canvas) {
-            mountCanvas((Canvas) comp);
+            if (canvas != null) {
+                throw new UnsupportedOperationException("only one canvas supported in a JFrame");
+            }
+            canvas = (Canvas) comp;
+
         }
 
         return comp;
     }
 
-    void mountCanvas(Canvas c) {
-
-    }
     
     public static final int EXIT_ON_CLOSE = 3;
 
@@ -40,6 +43,12 @@ public class JFrame {
         return new Point();
     }
     public void setResizable(boolean r) {}
-    public void setVisible(boolean r) {}
+    public void setVisible(boolean visible) {
+        canvas.setVisible(visible);
+        if (!visible) {
+            return;
+        }
+        canvas.repaint();
+    }
 }
 

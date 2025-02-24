@@ -117,8 +117,11 @@ class JVM {
       JVM.registerNativeModule(require('./natives/java_nio').default);
       JVM.registerNativeModule(require('./natives/java_security').default);
       JVM.registerNativeModule(require('./natives/java_util').default);
+
       // @stu
       // JVM.registerNativeModule(require('./natives/javax_swing').default);
+      JVM.registerNativeModule(require('./natives/java_awt').default);
+
       JVM.registerNativeModule(require('./natives/sun_font').default);
       JVM.registerNativeModule(require('./natives/sun_management').default);
       JVM.registerNativeModule(require('./natives/sun_misc').default);

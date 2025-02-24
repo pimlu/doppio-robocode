@@ -15,10 +15,10 @@ class MyCanvas extends Canvas {
 	final int WIDTH = 500;
 	final int HEIGHT = 300;
 
-  public MyCanvas() {
+	public MyCanvas() {
 		setSize(WIDTH, HEIGHT);
-        
-  }
+			
+	}
 	public void paint(Graphics g_) {
 		Graphics2D g = (Graphics2D) g_;
 		Thread.dumpStack();
@@ -29,15 +29,15 @@ class MyCanvas extends Canvas {
 
 class App {
 	static MyCanvas game;
-  public static void main(String[] args) {
-    System.out.println("DoppioJVM now booted!");
-    // Scanner stdin = new Scanner(System.in);
-    // System.out.println("What is your name?");
-    // if (stdin.hasNextLine())
-    // {
-    //     String name = stdin.nextLine();
-    //     System.out.println("Hello, " + name + "!");
-    // }
+  	public static void main(String[] args) {
+		System.out.println("DoppioJVM now booted!");
+		// Scanner stdin = new Scanner(System.in);
+		// System.out.println("What is your name?");
+		// if (stdin.hasNextLine())
+		// {
+		//     String name = stdin.nextLine();
+		//     System.out.println("Hello, " + name + "!");
+		// }
 
 		//Create and set up the window.
 		JFrame frame = new JFrame("Test");
@@ -51,9 +51,8 @@ class App {
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setLocation(frame.getLocation().x, frame.getLocation().y - 100);
-    frame.setResizable(false);
+		frame.setResizable(false);
 		frame.setVisible(true);
 		game.requestFocus();
-
-  }
+	}
 }

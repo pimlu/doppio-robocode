@@ -2,6 +2,8 @@ package classes.awt;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import classes.awt.BrowserCanvas;
 import sun.awt.*;
 import sun.java2d.*;
 
@@ -12,7 +14,21 @@ public class CanvasGraphicsEnvironment extends SunGraphicsEnvironment {
     public native GraphicsDevice getDefaultScreenDevice()
         throws HeadlessException;
 
-    public native Graphics2D createGraphics(BufferedImage img);
+    public Graphics2D createGraphics(BufferedImage img) {
+        // TODO this really shouldn't create two separate canvases if this is called twice. but whatever
+        BrowserCanvas canvas = new BrowserCanvas();
+        canvas.resize(img.getWidth(), img.getHeight());
+        CanvasGraphics2D g = canvas.getGraphics();
+        // make sure the canvas has this image
+        g.drawImage(img, 0, 0, null);
+
+        g.postDrawSync = new Runnable() {
+            public void run() {
+                throw new UnsupportedOperationException("TODO");
+            }
+        };
+        return g;
+    }
 
     public native Font[] getAllFonts();
 

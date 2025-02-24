@@ -345,7 +345,7 @@ export abstract class ClassLoader {
       console.log("@stu", Object.keys(this.loadedClasses).filter(s => s.indexOf('robocode') !== -1));
       // console.log("@stu plz");
     }
-    console.log("@stu", typeStr);
+    console.log("@stu CNF", typeStr);
     thread.throwNewException(explicit ? 'Ljava/lang/ClassNotFoundException;' : 'Ljava/lang/NoClassDefFoundError;', `Cannot load class: ${ext_classname(typeStr)}`);
   }
 
