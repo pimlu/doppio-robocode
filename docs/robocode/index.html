@@ -54,7 +54,7 @@
         let RE = '/sys/robocode-extract';
         setTimeout(function() {
           Doppio.VM.CLI(
-            ['-Dawt.toolkit=sun.awt.HToolkit',
+            ['-Dawt.toolkit=classes.awt.BrowserToolkit',
             '-cp', `${RE}libs/*:${RE}/robots`,
             '-jar', `${RE}/libs/robocode.jar`,
             '-battle', `${RE}/battles/intro.battle`,

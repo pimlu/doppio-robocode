@@ -56,9 +56,7 @@ export default function (): any {
     if (typeof rv === 'boolean') {
       rv = Number(rv);
     }
-    console.log("found postDrawSync");
     postDrawSync['run()V'](thread, [], (e?: JVMTypes.java_lang_Throwable) => {
-      console.log("concluding postDrawSync", e, rv);
       if (e) {
         thread.throwException(e);
       } else {
