@@ -48,34 +48,28 @@ export default function (): any {
 
   const g2dCanvas = 'classes/awt/CanvasGraphics2D/canvas'
 
-  function sync(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, rv?: any) {
-    const postDrawSync = javaThis['classes/awt/CanvasGraphics2D/postDrawSync'];
-    if (!postDrawSync) {
-      return;
-    }
-    if (typeof rv === 'boolean') {
-      rv = Number(rv);
-    }
-    
-    postDrawSync['run()V'](thread, [], (e?: JVMTypes.java_lang_Throwable) => {
-      if (e) {
-        thread.throwException(e);
-      } else {
-        thread.asyncReturn(rv);
-      }
-    });
-  }
-
   // from BufferedImage. Converted to strings because old typescript seems to need this for records
-  const TYPE_INT_ARGB = '2',
+  const TYPE_INT_RGB = '1',
+    TYPE_INT_ARGB = '2',
+    TYPE_3BYTE_BGR = '5',
     TYPE_4BYTE_ABGR = '6',
     // this one is made up
     TYPE_CANVAS_RGBA = '999';
-  type ImageType = typeof TYPE_INT_ARGB | typeof TYPE_4BYTE_ABGR | typeof TYPE_CANVAS_RGBA;
 
-  type ConversionMap = Record<ImageType, (src: Uint8Array) => Uint8Array>;
+  type ConversionMap = Record<string, (src: Uint8Array) => Uint8Array>;
   // this silly cast is needed for old typescript
   const normalizers: ConversionMap = {
+    [TYPE_INT_RGB]: (src: Uint8Array) => {
+      let dst = new Uint8Array(src.length);
+      for (let i=0; i<src.length; i += 4) {
+        // dst is RGBA, src is RGB_
+        dst[i+0] = src[i+0];
+        dst[i+1] = src[i+1];
+        dst[i+2] = src[i+2];
+        dst[i+3] = 0;
+      }
+      return dst;
+    },
     [TYPE_INT_ARGB]: (src: Uint8Array) => {
         let dst = new Uint8Array(src.length);
         for (let i=0; i<src.length; i += 4) {
@@ -86,6 +80,19 @@ export default function (): any {
           dst[i+3] = src[i+0];
         }
         return dst;
+    },
+    [TYPE_3BYTE_BGR]: (src: Uint8Array) => {
+      let pixels = src.length/3;
+      let dst = new Uint8Array(pixels * 4);
+      for (let p=0; p<pixels; p++) {
+        let i = p*4, j = p*3;
+        // dst is RGBA, src is RGB (no 4th byte)
+        dst[i+0] = src[j+0];
+        dst[i+1] = src[j+1];
+        dst[i+2] = src[j+2];
+        dst[i+3] = 0;
+      }
+      return dst;
     },
     [TYPE_4BYTE_ABGR]: (src: Uint8Array) => {
       let dst = new Uint8Array(src.length);
@@ -102,9 +109,9 @@ export default function (): any {
   } as ConversionMap;
   function convertToRGBA(srcType: string, src: Uint8Array): Uint8Array {
     if (!(srcType in normalizers)) {
-      throw new Error(`can't convert from unknown image type ${srcType}`);
+      throw new Error(`can't convert from unsupported image type ${srcType}`);
     }
-    return normalizers[srcType as ImageType](src);
+    return normalizers[srcType](src);
   }
   const denormalizers: ConversionMap = {
     [TYPE_INT_ARGB]: (src: Uint8Array) => {
@@ -125,9 +132,9 @@ export default function (): any {
   } as ConversionMap;
   function convertFromRGBA(dstType: string, src: Uint8Array): Uint8Array {
     if (!(dstType in denormalizers)) {
-      throw new Error(`can't convert to unknown image type ${dstType}`);
+      throw new Error(`can't convert to unsupported image type ${dstType}`);
     }
-    return denormalizers[dstType as ImageType](src);
+    return denormalizers[dstType](src);
   }
   function convertImageBuffer(srcType: string, dstType: string, src: Uint8Array): Uint8Array {
     let rgbaBuffer = convertToRGBA(srcType, src);
@@ -182,11 +189,9 @@ export default function (): any {
     }
     public static 'doStroke()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
       javaThis.ctx.stroke();
-      sync(thread, javaThis);
     }
     public static 'doFill()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
       javaThis.ctx.fill();
-      sync(thread, javaThis);
     }
 
 
@@ -234,7 +239,6 @@ export default function (): any {
     }
     public static 'clearRect(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, width: number, height: number): void {
       javaThis.ctx.clearRect(x, y, width, height);
-      sync(thread, javaThis);
     }
     public static 'drawOval(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, width: number, height: number): void {
       let {ctx} = javaThis;
@@ -245,8 +249,6 @@ export default function (): any {
       ctx.beginPath();
       ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
       ctx.stroke();
-
-      sync(thread, javaThis);
     }
 
     public static 'drawImage(Ljava/awt/Image;IILjava/awt/image/ImageObserver;)Z'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, image: JVMTypes.java_awt_Image, x: number, y: number, o: JVMTypes.java_awt_image_ImageObserver): boolean {
@@ -296,7 +298,6 @@ export default function (): any {
 
       javaThis.ctx.putImageData(imgData, x, y);
 
-      sync(thread, javaThis, true);
       return true;
     }
 
@@ -307,7 +308,6 @@ export default function (): any {
     public static 'drawString(Ljava/lang/String;FF)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, str: JVMTypes.java_lang_String, x: number, y: number): void {
       let jsStr = str.toString();
       javaThis.ctx.fillText(jsStr, x, y);
-      sync(thread, javaThis);
     }
   }
 

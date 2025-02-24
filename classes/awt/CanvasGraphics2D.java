@@ -323,8 +323,10 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void dispose() {
-        // does nothing because we use the same context for everything.
-        // TODO is that bad because of multiple colors/transformations or something?
+        // kind of a hack but sync back bufferedimages here
+        if (postDrawSync != null) {
+            postDrawSync.run();
+        }
     }
 
     @Override
