@@ -791,6 +791,9 @@ export class JVMThread implements Thread {
   public getStackTrace(): IStackTraceFrame[] {
     var trace: IStackTraceFrame[] = [], i: number,
       frame: IStackTraceFrame;
+    if (this.stack.length > 1000) {
+      debugger;
+    }
     for (i = 0; i < this.stack.length; i++) {
       frame = this.stack[i].getStackTraceFrame();
       if (frame != null) {

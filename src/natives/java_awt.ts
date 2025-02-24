@@ -56,6 +56,7 @@ export default function (): any {
     if (typeof rv === 'boolean') {
       rv = Number(rv);
     }
+    
     postDrawSync['run()V'](thread, [], (e?: JVMTypes.java_lang_Throwable) => {
       if (e) {
         thread.throwException(e);
@@ -142,13 +143,19 @@ export default function (): any {
     }
   }
 
+  function setFont(ctx: CanvasRenderingContext2D, font: JVMTypes.java_awt_Font) {
+    let size = font['java/awt/Font/pointSize'];
+    ctx.font =`${size}px sans-serif`;
+  }
+
   interface DataBufferInt {
     'java/awt/image/DataBufferInt/data': { array: Int32Array }
   }
   
 
   class classes_awt_CanvasGraphics2D {
-
+    'classes/awt/CanvasGraphics2D/color': JVMTypes.java_awt_Color;
+    'classes/awt/CanvasGraphics2D/font': JVMTypes.java_awt_Font;
     'classes/awt/CanvasGraphics2D/tf': JVMTypes.java_awt_geom_AffineTransform;
     'classes/awt/CanvasGraphics2D/canvas': classes_awt_BrowserCanvas;
     ctx: CanvasRenderingContext2D;
@@ -292,6 +299,45 @@ export default function (): any {
       sync(thread, javaThis, true);
       return true;
     }
+
+    public static 'setFontImpl()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
+      setFont(javaThis.ctx, javaThis['classes/awt/CanvasGraphics2D/font']);
+    }
+
+    public static 'drawString(Ljava/lang/String;FF)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, str: JVMTypes.java_lang_String, x: number, y: number): void {
+      let jsStr = str.toString();
+      javaThis.ctx.fillText(jsStr, x, y);
+      sync(thread, javaThis);
+    }
+  }
+
+  class classes_awt_BrowserFontMetrics {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    limits: TextMetrics;
+    'java/awt/FontMetrics/font': JVMTypes.java_awt_Font;
+
+    public static 'init()V'(thread: JVMThread, javaThis: classes_awt_BrowserFontMetrics): void {
+      javaThis.canvas = document.createElement('canvas');
+      let ctx = javaThis.canvas.getContext('2d');;
+      javaThis.ctx = ctx;
+      setFont(ctx, javaThis['java/awt/FontMetrics/font']);
+
+      let az = 'abcdefghijklmnopqrstuvwxyz';
+      javaThis.limits = ctx.measureText(`1234567890 ${az} ${az.toUpperCase()}`);
+    }
+    public static 'getAscent()I'(thread: JVMThread, javaThis: classes_awt_BrowserFontMetrics): number {
+      return (javaThis.limits as any).actualBoundingBoxAscent | 0;
+    }
+    public static 'getDescent()I'(thread: JVMThread, javaThis: classes_awt_BrowserFontMetrics): number {
+      return (javaThis.limits as any).actualBoundingBoxDescent | 0;
+    }
+    public static 'stringWidth(Ljava/lang/String;)I'(thread: JVMThread, javaThis: classes_awt_BrowserFontMetrics, str: JVMTypes.java_lang_String): number {
+      let jsStr = str.toString();
+      let measurement = javaThis.ctx.measureText(jsStr);
+      return measurement.width | 0;
+    }
+
   }
 
 
@@ -300,6 +346,7 @@ export default function (): any {
     'javax/swing/JFrame': javax_swing_JFrame,
     'classes/awt/CanvasGraphicsEnvironment': classes_awt_CanvasGraphicsEnvironment,
     'classes/awt/BrowserCanvas': classes_awt_BrowserCanvas,
-    'classes/awt/CanvasGraphics2D': classes_awt_CanvasGraphics2D
+    'classes/awt/CanvasGraphics2D': classes_awt_CanvasGraphics2D,
+    'classes/awt/BrowserFontMetrics': classes_awt_BrowserFontMetrics,
   };
 };

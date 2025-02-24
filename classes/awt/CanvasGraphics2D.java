@@ -19,6 +19,7 @@ import classes.awt.BrowserCanvas;
 
 public class CanvasGraphics2D extends Graphics2D {
     private Color color = Color.BLACK;
+    private Font font = null;
 
     private AffineTransform tf = new AffineTransform();
     private BrowserCanvas canvas;
@@ -28,6 +29,7 @@ public class CanvasGraphics2D extends Graphics2D {
     public CanvasGraphics2D(BrowserCanvas canvas) {
         this.canvas = canvas;
         init();
+        setFont(new Font("sans-serif", 0, 14));
     }
     private native void init();
 
@@ -48,7 +50,7 @@ public class CanvasGraphics2D extends Graphics2D {
     private native void syncTransform();
 
     private void traceShape(Shape s) {
-        PathIterator iter = s.getPathIterator(null);
+        PathIterator iter = s.getPathIterator(tf);
         double[] coords = new double[6];
         double startX = 0.0, startY = 0.0;
         while (!iter.isDone()) {
@@ -137,15 +139,11 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void drawString(String str, int x, int y) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawString'");
+        drawString(str, (float) x, (float) y);
     }
 
     @Override
-    public void drawString(String str, float x, float y) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawString'");
-    }
+    public native void drawString(String str, float x, float y);
 
     @Override
     public void drawString(AttributedCharacterIterator iterator, int x, int y) {
@@ -446,14 +444,12 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Font getFont() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getFont'");
+        return font;
     }
 
     @Override
     public FontMetrics getFontMetrics(Font f) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getFontMetrics'");
+        return new BrowserFontMetrics(f);
     }
 
     @Override
@@ -471,15 +467,16 @@ public class CanvasGraphics2D extends Graphics2D {
     @Override
     public void setColor(Color c) {
         color = c;
-
+        setColorImpl(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
     private native void setColorImpl(int r, int g, int b, int a);
 
     @Override
     public void setFont(Font font) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setFont'");
+        this.font = font;
+        setFontImpl();
     }
+    private native void setFontImpl();
 
     @Override
     public void setPaintMode() {
