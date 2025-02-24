@@ -36,7 +36,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
     public Image getImage() {
         int width = this.canvas.width(), height = this.canvas.height();
-        BufferedImage img = new BufferedImage(BufferedImage.TYPE_INT_ARGB, width, height);
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         writeARGB(img);
         return img;
     }
@@ -266,10 +266,7 @@ public class CanvasGraphics2D extends Graphics2D {
     }
 
     @Override
-    public void clearRect(int x, int y, int width, int height) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'clearRect'");
-    }
+    public native void clearRect(int x, int y, int width, int height);
 
     @Override
     public void clipRect(int x, int y, int width, int height) {
@@ -291,8 +288,8 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void dispose() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'dispose'");
+        // does nothing because we use the same context for everything.
+        // TODO is that bad because of multiple colors/transformations or something?
     }
 
     @Override
@@ -302,10 +299,7 @@ public class CanvasGraphics2D extends Graphics2D {
     }
 
     @Override
-    public boolean drawImage(Image img, int x, int y, ImageObserver observer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawImage'");
-    }
+    public native boolean drawImage(Image img, int x, int y, ImageObserver observer);
 
     @Override
     public boolean drawImage(Image img, int x, int y, Color bgcolor, ImageObserver observer) {
@@ -346,10 +340,7 @@ public class CanvasGraphics2D extends Graphics2D {
     }
 
     @Override
-    public void drawOval(int x, int y, int width, int height) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawOval'");
-    }
+    public native void drawOval(int x, int y, int width, int height);
 
     @Override
     public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints) {

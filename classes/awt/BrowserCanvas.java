@@ -22,6 +22,6 @@ public class BrowserCanvas {
         return g;
     }
     public Image getImage() {
-        return null;
+        return getGraphics().getImage();
     }
 }

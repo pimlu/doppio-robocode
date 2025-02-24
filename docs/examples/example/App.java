@@ -21,8 +21,10 @@ class MyCanvas extends Canvas {
 	}
 	public void paint(Graphics g_) {
 		Graphics2D g = (Graphics2D) g_;
-		Thread.dumpStack();
+		// Thread.dumpStack();
+		System.out.println("drawing oval");
 		g.drawOval(10, 10, 100, 200);
+		System.out.println("done drawing oval");
 	}
 }
 
@@ -54,5 +56,7 @@ class App {
 		frame.setResizable(false);
 		frame.setVisible(true);
 		game.requestFocus();
+
+		System.out.println("App finished");
 	}
 }
