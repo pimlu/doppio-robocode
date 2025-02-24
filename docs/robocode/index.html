@@ -5,21 +5,51 @@
     <script type="text/javascript" src="doppio/browserfs.min.js"></script>
     <script type="text/javascript" src="doppio/doppio.js"></script>
     <script type="text/javascript">
+      
       // Wrap in a closure; don't pollute the global namespace.
-      (function() {
+      (async function() {
+
+        let loaded = new Promise(res => {
+          window.addEventListener('load', () => res());
+        });
         var mfs = new BrowserFS.FileSystem.MountableFileSystem(),
-            fs = BrowserFS.BFSRequire('fs');
+            fs = BrowserFS.BFSRequire('fs'),
+            process = BrowserFS.BFSRequire('process');
         BrowserFS.initialize(mfs);
         // Temporary storage.
         mfs.mount('/tmp', new BrowserFS.FileSystem.InMemory());
         // 10MB of writable storage
         // Use BrowserFS's IndexedDB file system for more storage.
         mfs.mount('/home', new BrowserFS.FileSystem.LocalStorage());
+
+        let sysTmp = new BrowserFS.FileSystem.InMemory();
+
+        let system = await new Promise((res, rej) => {
+          let fs = new BrowserFS.FileSystem.XmlHttpRequest.FromURL('listings.json', (e, data) => {
+            if (e) {
+              rej(e);
+            } else {
+              res(data);
+            }
+          });
+        });
+
+        let overlayfs = await new Promise((res, rej) => {
+          let fs = new BrowserFS.FileSystem.OverlayFS(sysTmp, system);
+          fs.initialize(e => {
+            if (e) rej(e);
+            else res(fs);
+          });
+        })
         // The first argument is the filename of the listings file
         // The second argument is the relative URL to the folder containing the listings file
-        mfs.mount('/sys', new BrowserFS.FileSystem.XmlHttpRequest('listings.json', '.'));
+        mfs.mount('/sys', overlayfs);
+        // mfs.mount('/sys', system);
 
-        window.addEventListener('load', function() {
+        window._mfs = mfs;
+        process.chdir('/sys/robocode-extract');
+
+        loaded.then(function() {
           var textarea = document.getElementById('console');
           var process = BrowserFS.BFSRequire('process');
           process.initializeTTYs();
@@ -55,9 +85,9 @@
         setTimeout(function() {
           Doppio.VM.CLI(
             ['-Dawt.toolkit=classes.awt.BrowserToolkit',
-            '-cp', `${RE}libs/*:${RE}/robots`,
-            '-jar', `${RE}/libs/robocode.jar`,
-            '-battle', `${RE}/battles/intro.battle`,
+            '-cp', `libs/*:robots`,
+            '-jar', `libs/robocode.jar`,
+            '-battle', `battles/intro.battle`,
             '-nosound'],
           {
             doppioHomePath: '/sys/doppio'
@@ -67,12 +97,12 @@
     </script>
     <style>
       html, body, textarea {
-        background: #888;
+        background: #777;
       }
     </style>
   </head>
   <body>
-    <textarea id="console" cols="80" rows="30"></textarea><br />
+    <textarea id="console" cols="120" rows="30"></textarea><br />
     <input id="stdin" /><button id="stdinButton">Send to App</button>
   </body>
 </html>
