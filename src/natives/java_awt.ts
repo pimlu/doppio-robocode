@@ -148,12 +148,69 @@ export default function (): any {
   
 
   class classes_awt_CanvasGraphics2D {
+
+    'classes/awt/CanvasGraphics2D/tf': JVMTypes.java_awt_geom_AffineTransform;
     'classes/awt/CanvasGraphics2D/canvas': classes_awt_BrowserCanvas;
     ctx: CanvasRenderingContext2D;
     'classes/awt/CanvasGraphics2D/postDrawSync': JVMTypes.java_lang_Runnable;
 
     public static 'init()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
       javaThis.ctx = javaThis[g2dCanvas].canvas.getContext('2d');
+    }
+
+    public static 'beginPath()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
+      javaThis.ctx.beginPath();
+    }
+    public static 'moveTo(DD)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number): void {
+      javaThis.ctx.moveTo(x, y);
+    }
+    public static 'lineTo(DD)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number): void {
+      javaThis.ctx.lineTo(x, y);
+    }
+    public static 'quadTo(DDDD)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, a: number, b: number, c: number, d: number): void {
+      javaThis.ctx.quadraticCurveTo(a, b, c, d);
+    }
+    public static 'cubicTo(DDDDDD)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, a: number, b: number, c: number, d: number, e: number, f: number): void {
+      javaThis.ctx.bezierCurveTo(a, b, c, d, e, f);
+    }
+    public static 'doStroke()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
+      javaThis.ctx.stroke();
+      sync(thread, javaThis);
+    }
+    public static 'doFill()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
+      javaThis.ctx.fill();
+      sync(thread, javaThis);
+    }
+
+
+    public static 'syncTransform()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
+      let tf = javaThis['classes/awt/CanvasGraphics2D/tf'];
+
+      let target = {
+        m11: tf['java/awt/geom/AffineTransform/m00'],
+        m12: tf['java/awt/geom/AffineTransform/m01'],
+        m21: tf['java/awt/geom/AffineTransform/m10'],
+        m22: tf['java/awt/geom/AffineTransform/m11'],
+  
+        m13: tf['java/awt/geom/AffineTransform/m02'],
+        m23: tf['java/awt/geom/AffineTransform/m12'],
+      };
+
+      
+      (javaThis.ctx.setTransform as any)(target);
+    }
+
+    public static 'setColorImpl(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, r: number, g: number, b: number, a: number): void {
+      let {ctx} = javaThis;
+
+      let dump = (b: number) => {
+        let s = b.toString(16);
+        while (s.length < 2) s = '0'+s;
+        return s;
+      }
+      let color = '#' + [r,g,b,a].map(dump).join('');
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
     }
 
 

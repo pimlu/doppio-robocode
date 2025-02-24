@@ -5,6 +5,7 @@ import java.awt.RenderingHints.Key;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ImageObserver;
@@ -17,7 +18,9 @@ import java.util.Map;
 import classes.awt.BrowserCanvas;
 
 public class CanvasGraphics2D extends Graphics2D {
+    private Color color = Color.BLACK;
 
+    private AffineTransform tf = new AffineTransform();
     private BrowserCanvas canvas;
 
     public Runnable postDrawSync;
@@ -31,6 +34,47 @@ public class CanvasGraphics2D extends Graphics2D {
     private void sync() {
         if (postDrawSync != null) {
             postDrawSync.run();
+        }
+    }
+
+    private native void beginPath();
+    private native void moveTo(double x, double y);
+    private native void lineTo(double x, double y);
+    private native void quadTo(double a, double b, double c, double d);
+    private native void cubicTo(double a, double b, double c, double d, double e, double f);
+    private native void doStroke();
+    private native void doFill();
+
+    private native void syncTransform();
+
+    private void traceShape(Shape s) {
+        PathIterator iter = s.getPathIterator(null);
+        double[] coords = new double[6];
+        double startX = 0.0, startY = 0.0;
+        while (!iter.isDone()) {
+            int kind = iter.currentSegment(coords);
+            switch(kind) {
+                case PathIterator.SEG_MOVETO:
+                    startX = coords[0];
+                    startY = coords[1];
+                    moveTo(coords[0], coords[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    lineTo(coords[0], coords[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    quadTo(coords[0], coords[1], coords[2], coords[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    cubicTo(coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    lineTo(startX, startY);
+                    break;
+                default:
+                    throw new Error("unexpected path type " + kind);
+            }
+            iter.next();
         }
     }
 
@@ -117,8 +161,9 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void fill(Shape s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'fill'");
+        beginPath();
+        traceShape(s);
+        doFill();
     }
 
     @Override
@@ -153,14 +198,12 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Object getRenderingHint(Key hintKey) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRenderingHint'");
+        return null;
     }
 
     @Override
     public RenderingHints getRenderingHints() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getRenderingHints'");
+        return new RenderingHints(null);
     }
 
     @Override
@@ -171,8 +214,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public AffineTransform getTransform() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransform'");
+        return new AffineTransform(tf);
     }
 
     @Override
@@ -183,20 +225,20 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void rotate(double theta) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rotate'");
+        tf.rotate(theta);
+        syncTransform();
     }
 
     @Override
     public void rotate(double theta, double x, double y) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'rotate'");
+        tf.rotate(theta, x, y);
+        syncTransform();
     }
 
     @Override
     public void scale(double sx, double sy) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'scale'");
+        tf.scale(sx, sy);
+        syncTransform();
     }
 
     @Override
@@ -219,14 +261,10 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setRenderingHint(Key hintKey, Object hintValue) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setRenderingHint'");
     }
 
     @Override
     public void setRenderingHints(Map<?, ?> hints) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setRenderingHints'");
     }
 
     @Override
@@ -237,32 +275,31 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setTransform(AffineTransform Tx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setTransform'");
+        tf = Tx;
+        syncTransform();
     }
 
     @Override
     public void shear(double shx, double shy) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'shear'");
+        tf.shear(shx, shy);
+        syncTransform();
     }
 
     @Override
     public void transform(AffineTransform Tx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'transform'");
+        tf.concatenate(Tx);
+        syncTransform();
     }
 
     @Override
     public void translate(int x, int y) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'translate'");
+        translate((double) x, (double) y);
     }
 
     @Override
     public void translate(double tx, double ty) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'translate'");
+        tf.translate(tx, ty);
+        syncTransform();
     }
 
     @Override
@@ -404,8 +441,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Color getColor() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getColor'");
+        return color;
     }
 
     @Override
@@ -434,9 +470,10 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setColor(Color c) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setColor'");
+        color = c;
+
     }
+    private native void setColorImpl(int r, int g, int b, int a);
 
     @Override
     public void setFont(Font font) {
