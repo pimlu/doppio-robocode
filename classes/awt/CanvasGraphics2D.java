@@ -18,7 +18,7 @@ import java.util.Map;
 import classes.awt.BrowserCanvas;
 
 public class CanvasGraphics2D extends Graphics2D {
-    private Color color = Color.BLACK;
+    private Paint paint = Color.BLACK;
     private Font font = null;
 
     private AffineTransform tf = new AffineTransform();
@@ -115,8 +115,14 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public boolean drawImage(Image img, AffineTransform xform, ImageObserver obs) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawImage'");
+        AffineTransform origTf = new AffineTransform(tf);
+        transform(xform);
+
+        boolean res = drawImage(img, 0, 0, null);
+
+        tf.setTransform(origTf);
+        syncTransform();
+        return res;
     }
 
     @Override
@@ -166,14 +172,14 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Color getBackground() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getBackground'");
+        // FIXME
+        return Color.BLACK;
     }
 
     @Override
     public Composite getComposite() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getComposite'");
+        // FIXME
+        return null;
     }
 
     @Override
@@ -190,8 +196,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Paint getPaint() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPaint'");
+        return paint;
     }
 
     @Override
@@ -206,8 +211,8 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Stroke getStroke() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getStroke'");
+        // FIXME
+        return null;
     }
 
     @Override
@@ -241,20 +246,20 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setBackground(Color color) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setBackground'");
+        // FIXME
     }
 
     @Override
     public void setComposite(Composite comp) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setComposite'");
+        // FIXME
     }
 
     @Override
     public void setPaint(Paint paint) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setPaint'");
+        if (!(paint instanceof Color)) {
+            throw new UnsupportedOperationException("setPaint only supports Color");
+        }
+        setColor((Color) paint);
     }
 
     @Override
@@ -267,8 +272,6 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setStroke(Stroke s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setStroke'");
     }
 
     @Override
@@ -335,26 +338,39 @@ public class CanvasGraphics2D extends Graphics2D {
         throw new UnsupportedOperationException("Unimplemented method 'drawArc'");
     }
 
+    private static int expectWidth(Image img) {
+        int width = img.getWidth(null);
+        if (width < 0) {
+            throw new UnsupportedOperationException("img dimensions were not ready yet");
+        }
+        return width;
+    }
+    private static int expectHeight(Image img) {
+        int height = img.getHeight(null);
+        if (height < 0) {
+            throw new UnsupportedOperationException("img dimensions were not ready yet");
+        }
+        return height;
+    }
+
+    static final Color TRANSPARENT = new Color(0, 0, 0, 255);
     @Override
-    public native boolean drawImage(Image img, int x, int y, ImageObserver observer);
+    public boolean drawImage(Image img, int x, int y, ImageObserver observer) {
+        return drawImage(img, x, y, TRANSPARENT, observer);
+    }
 
     @Override
     public boolean drawImage(Image img, int x, int y, Color bgcolor, ImageObserver observer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawImage'");
+        return drawImage(img, x, y, expectWidth(img), expectHeight(img), bgcolor, observer);
     }
 
     @Override
     public boolean drawImage(Image img, int x, int y, int width, int height, ImageObserver observer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawImage'");
+        return drawImage(img, x, y, expectWidth(img), expectHeight(img), TRANSPARENT, observer);
     }
 
     @Override
-    public boolean drawImage(Image img, int x, int y, int width, int height, Color bgcolor, ImageObserver observer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawImage'");
-    }
+    public native boolean drawImage(Image img, int x, int y, int width, int height, Color bgcolor, ImageObserver observer);
 
     @Override
     public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
@@ -371,10 +387,7 @@ public class CanvasGraphics2D extends Graphics2D {
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'drawLine'");
-    }
+    public native void drawLine(int x1, int y1, int x2, int y2);
 
     @Override
     public native void drawOval(int x, int y, int width, int height);
@@ -416,10 +429,7 @@ public class CanvasGraphics2D extends Graphics2D {
     }
 
     @Override
-    public void fillRect(int x, int y, int width, int height) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'fillRect'");
-    }
+    public native void fillRect(int x, int y, int width, int height);
 
     @Override
     public void fillRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
@@ -429,8 +439,8 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Shape getClip() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getClip'");
+        // FIXME
+        return null;
     }
 
     @Override
@@ -441,7 +451,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public Color getColor() {
-        return color;
+        return (Color) paint;
     }
 
     @Override
@@ -456,19 +466,17 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setClip(Shape clip) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setClip'");
+        // FIXME
     }
 
     @Override
     public void setClip(int x, int y, int width, int height) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setClip'");
+        setClip(new Rectangle(x, y, width, height));
     }
 
     @Override
     public void setColor(Color c) {
-        color = c;
+        paint = c;
         setColorImpl(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
     private native void setColorImpl(int r, int g, int b, int a);

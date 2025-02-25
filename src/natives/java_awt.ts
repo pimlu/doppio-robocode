@@ -155,13 +155,20 @@ export default function (): any {
     ctx.font =`${size}px sans-serif`;
   }
 
+  function ellipse(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+    let rx = w / 2, ry = h / 2;
+    let cx = x + rx, cy = y + ry
+
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
+  }
+
   interface DataBufferInt {
     'java/awt/image/DataBufferInt/data': { array: Int32Array }
   }
   
 
   class classes_awt_CanvasGraphics2D {
-    'classes/awt/CanvasGraphics2D/color': JVMTypes.java_awt_Color;
+    'classes/awt/CanvasGraphics2D/paint': JVMTypes.java_awt_Color;
     'classes/awt/CanvasGraphics2D/font': JVMTypes.java_awt_Font;
     'classes/awt/CanvasGraphics2D/tf': JVMTypes.java_awt_geom_AffineTransform;
     'classes/awt/CanvasGraphics2D/canvas': classes_awt_BrowserCanvas;
@@ -240,18 +247,25 @@ export default function (): any {
     public static 'clearRect(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, width: number, height: number): void {
       javaThis.ctx.clearRect(x, y, width, height);
     }
-    public static 'drawOval(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, width: number, height: number): void {
+
+    public static 'drawLine(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x1: number, y1: number, x2: number, y2: number): void {
       let {ctx} = javaThis;
 
-      let rx = width / 2, ry = height / 2;
-      let cx = x + rx, cy = y + ry
-
       ctx.beginPath();
-      ctx.ellipse(cx, cy, rx, ry, 0, 0, 2 * Math.PI);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
       ctx.stroke();
     }
 
-    public static 'drawImage(Ljava/awt/Image;IILjava/awt/image/ImageObserver;)Z'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, image: JVMTypes.java_awt_Image, x: number, y: number, o: JVMTypes.java_awt_image_ImageObserver): boolean {
+    public static 'drawOval(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, w: number, h: number): void {
+      let {ctx} = javaThis;
+
+      ctx.beginPath();
+      ellipse(ctx, x, y, w, h);
+      ctx.stroke();
+    }
+
+    public static 'drawImage(Ljava/awt/Image;IIIILjava/awt/Color;Ljava/awt/image/ImageObserver;)Z'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, image: JVMTypes.java_awt_Image, x: number, y: number, w: number, h: number, bgColor: JVMTypes.java_awt_Color, o: JVMTypes.java_awt_image_ImageObserver): boolean {
       if (!image) {
         // spec says it does nothing and returns true when image is null
         return true;
@@ -261,6 +275,7 @@ export default function (): any {
 
       let raster = bufImg['java/awt/image/BufferedImage/raster'];
       if (!raster) {
+        console.log("@stu bad raster from image:", image);
         thread.throwNewException('Ljava/lang/UnsupportedOperationException;', 'Couldn\'t find the raster field (doppio\'s drawImage() only supports BufferedImages)');
         return true;
       }
@@ -295,9 +310,20 @@ export default function (): any {
       }
 
       let imgData = new ImageData(dst, width, height);
+      thread.setStatus(ThreadStatus.ASYNC_WAITING);
+      (window as any).createImageBitmap(imgData).then((bitmap: any) => {
+        try {
+          javaThis.ctx.drawImage(bitmap, x, y, w, h);
+  
+          thread.asyncReturn(1);
+        } finally {
+          bitmap.close();
+        }
+      }).catch((err: Error) => {
+        thread.throwNewException('Ljava/lang/Exception;', `failed to write bitmap: ${err}`);
+      });
 
-      javaThis.ctx.putImageData(imgData, x, y);
-
+      // I think this doesn't do anything but satisfy typescript?
       return true;
     }
 
@@ -309,6 +335,20 @@ export default function (): any {
       let jsStr = str.toString();
       javaThis.ctx.fillText(jsStr, x, y);
     }
+
+    public static 'fillRect(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, w: number, h: number): void {
+      javaThis.ctx.fillRect(x, y, w, h);
+    }
+
+    public static 'filOval(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, w: number, h: number): void {
+      let {ctx} = javaThis;
+
+      ctx.beginPath();
+      ellipse(ctx, x, y, w, h);
+      ctx.fill();
+    }
+
+
   }
 
   class classes_awt_BrowserFontMetrics {
