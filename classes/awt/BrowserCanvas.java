@@ -17,13 +17,13 @@ public class BrowserCanvas {
     public native int height();
 
     public CanvasGraphics2D getGraphics() {
-        if (g == null) {
-            g = new CanvasGraphics2D(this);
-        }
-        return g;
+        return new CanvasGraphics2D(this);
     }
     public Image getImage() {
-        return getGraphics().getImage();
+        if (g == null) {
+            g = getGraphics();
+        }
+        return g.getImage();
     }
 
     public synchronized void addComponentListener(ComponentListener l) {}

@@ -207,12 +207,12 @@ export default function (): any {
 
       let target = {
         m11: tf['java/awt/geom/AffineTransform/m00'],
-        m12: tf['java/awt/geom/AffineTransform/m01'],
-        m21: tf['java/awt/geom/AffineTransform/m10'],
+        m12: tf['java/awt/geom/AffineTransform/m10'],
+        m21: tf['java/awt/geom/AffineTransform/m01'],
         m22: tf['java/awt/geom/AffineTransform/m11'],
   
-        m13: tf['java/awt/geom/AffineTransform/m02'],
-        m23: tf['java/awt/geom/AffineTransform/m12'],
+        m41: tf['java/awt/geom/AffineTransform/m02'],
+        m42: tf['java/awt/geom/AffineTransform/m12'],
       };
 
       
@@ -308,6 +308,11 @@ export default function (): any {
         thread.throwNewException('Ljava/lang/UnsupportedOperationException;', `Failed to convert from the image type ${imageType}: ${e}`);
         return true;
       }
+
+      let old = javaThis.ctx.strokeStyle;
+      javaThis.ctx.strokeStyle = 'white';
+      classes_awt_CanvasGraphics2D['drawOval(IIII)V'](thread, javaThis, x,y,w,h);
+      javaThis.ctx.strokeStyle = old;
 
       let imgData = new ImageData(dst, width, height);
       thread.setStatus(ThreadStatus.ASYNC_WAITING);

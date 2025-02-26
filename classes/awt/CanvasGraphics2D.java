@@ -50,7 +50,7 @@ public class CanvasGraphics2D extends Graphics2D {
     private native void syncTransform();
 
     private void traceShape(Shape s) {
-        PathIterator iter = s.getPathIterator(tf);
+        PathIterator iter = s.getPathIterator(null);
         double[] coords = new double[6];
         double startX = 0.0, startY = 0.0;
         while (!iter.isDone()) {
@@ -120,8 +120,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
         boolean res = drawImage(img, 0, 0, null);
 
-        tf.setTransform(origTf);
-        syncTransform();
+        setTransform(origTf);
         return res;
     }
 
@@ -276,7 +275,7 @@ public class CanvasGraphics2D extends Graphics2D {
 
     @Override
     public void setTransform(AffineTransform Tx) {
-        tf = Tx;
+        tf.setTransform(Tx);
         syncTransform();
     }
 
