@@ -66,7 +66,7 @@ export default function (): any {
         dst[i+0] = src[i+0];
         dst[i+1] = src[i+1];
         dst[i+2] = src[i+2];
-        dst[i+3] = 0;
+        dst[i+3] = 255;
       }
       return dst;
     },
@@ -86,22 +86,23 @@ export default function (): any {
       let dst = new Uint8Array(pixels * 4);
       for (let p=0; p<pixels; p++) {
         let i = p*4, j = p*3;
-        // dst is RGBA, src is RGB (no 4th byte)
-        dst[i+0] = src[j+0];
+        // dst is RGBA, src is BGR (no 4th byte)
+        dst[i+0] = src[j+2];
         dst[i+1] = src[j+1];
-        dst[i+2] = src[j+2];
-        dst[i+3] = 0;
+        dst[i+2] = src[j+0];
+        dst[i+3] = 255;
       }
       return dst;
     },
+    // this one is used for the tank bodies
     [TYPE_4BYTE_ABGR]: (src: Uint8Array) => {
       let dst = new Uint8Array(src.length);
       for (let i=0; i<src.length; i += 4) {
-        // dst is ABGR, src is ARGB
-        dst[i+0] = src[i+0];
-        dst[i+1] = src[i+3];
-        dst[i+2] = src[i+2];
-        dst[i+3] = src[i+1];
+        // dst is RGBA, src is ABGR
+        dst[i+0] = src[i+3];
+        dst[i+1] = src[i+2];
+        dst[i+2] = src[i+1];
+        dst[i+3] = src[i+0];
       }
       return dst;
     },
