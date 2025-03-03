@@ -352,7 +352,7 @@ public class CanvasGraphics2D extends Graphics2D {
         return height;
     }
 
-    static final Color TRANSPARENT = new Color(0, 0, 0, 255);
+    static final Color TRANSPARENT = new Color(0, 0, 0, 0);
     @Override
     public boolean drawImage(Image img, int x, int y, ImageObserver observer) {
         return drawImage(img, x, y, TRANSPARENT, observer);

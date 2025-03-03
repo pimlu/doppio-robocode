@@ -59,28 +59,31 @@ export default function (): any {
   type ConversionMap = Record<string, (src: Uint8Array) => Uint8Array>;
   // this silly cast is needed for old typescript
   const normalizers: ConversionMap = {
+    // this is used for painting the ground/battlefield overall
     [TYPE_INT_RGB]: (src: Uint8Array) => {
       let dst = new Uint8Array(src.length);
       for (let i=0; i<src.length; i += 4) {
-        // dst is RGBA, src is RGB_
-        dst[i+0] = src[i+0];
+        // dst is RGBA, src is _RGB
+        dst[i+0] = src[i+2];
         dst[i+1] = src[i+1];
-        dst[i+2] = src[i+2];
+        dst[i+2] = src[i+0];
         dst[i+3] = 255;
       }
       return dst;
     },
+    // this one is crucial because it's the default BufferedImage layout
     [TYPE_INT_ARGB]: (src: Uint8Array) => {
         let dst = new Uint8Array(src.length);
         for (let i=0; i<src.length; i += 4) {
           // dst is RGBA, src is ARGB
-          dst[i+0] = src[i+1];
-          dst[i+1] = src[i+2];
-          dst[i+2] = src[i+3];
-          dst[i+3] = src[i+0];
+          dst[i+0] = src[i+2];
+          dst[i+1] = src[i+1];
+          dst[i+2] = src[i+0];
+          dst[i+3] = src[i+3];
         }
         return dst;
     },
+    // this one is used for painting individual tiles of the battlefield
     [TYPE_3BYTE_BGR]: (src: Uint8Array) => {
       let pixels = src.length/3;
       let dst = new Uint8Array(pixels * 4);
@@ -119,10 +122,10 @@ export default function (): any {
       let dst = new Uint8Array(src.length);
       for (let i=0; i<src.length; i += 4) {
         // dst is ARGB, src is RGBA
-        dst[i+0] = src[i+3];
-        dst[i+1] = src[i+0];
-        dst[i+2] = src[i+1];
-        dst[i+3] = src[i+2];
+        dst[i+0] = src[i+2];
+        dst[i+1] = src[i+1];
+        dst[i+2] = src[i+0];
+        dst[i+3] = src[i+3];
       }
       return dst;
     },
