@@ -371,7 +371,7 @@ export class BytecodeStackFrame implements IStackFrame {
             }
           } else {
             // ASYNC PATH: We'll need to asynchronously resolve these handlers.
-            debug(`${method.getFullSignature()} needs to resolve some exception types...`);
+            !RELEASE && debug(`${method.getFullSignature()} needs to resolve some exception types...`);
             let handlerClasses: string[] = [];
             for (let i = 0; i < exceptionHandlers.length; i++) {
               let handler = exceptionHandlers[i];
@@ -379,11 +379,11 @@ export class BytecodeStackFrame implements IStackFrame {
                 handlerClasses.push(handler.catchType);
               }
             }
-            debug(`${method.getFullSignature()}: Has to resolve exception classes. Deferring scheduling...`);
+            !RELEASE && debug(`${method.getFullSignature()}: Has to resolve exception classes. Deferring scheduling...`);
             thread.setStatus(ThreadStatus.ASYNC_WAITING);
             method.cls.getLoader().resolveClasses(thread, handlerClasses, (classes: { [name: string]: ClassData; }) => {
               if (classes !== null) {
-                debug(`${method.getFullSignature()}: Rethrowing exception to handle!`);
+                !RELEASE && debug(`${method.getFullSignature()}: Rethrowing exception to handle!`);
                 // Rethrow the exception to trigger scheduleException again.
                 // @todo If the ClassLoader throws an exception during resolution,
                 // this could result in an infinite loop. Fix would be to sync check
@@ -402,7 +402,7 @@ export class BytecodeStackFrame implements IStackFrame {
     // or set up the stack for appropriate resumption.
     if (handler != null) {
       // Found the handler.
-      debug(`${method.getFullSignature()}: Caught ${e.getClass().getInternalName()} as subclass of ${handler.catchType}`);
+      !RELEASE && debug(`${method.getFullSignature()}: Caught ${e.getClass().getInternalName()} as subclass of ${handler.catchType}`);
 
       // clear out anything on the stack; it was made during the try block
       this.opStack.clear();
@@ -412,7 +412,7 @@ export class BytecodeStackFrame implements IStackFrame {
       return true;
     } else {
       // abrupt method invocation completion
-      debug(`${method.getFullSignature()}: Did not catch ${e.getClass().getInternalName()}.`);
+      !RELEASE && debug(`${method.getFullSignature()}: Did not catch ${e.getClass().getInternalName()}.`);
       // STEP 3: Synchronized method? Exit from the method's monitor.
       if (method.accessFlags.isSynchronized()) {
         method.methodLock(thread, this).exit(thread);
@@ -468,10 +468,8 @@ export class NativeStackFrame implements IStackFrame {
    * NOTE: Should only be called once.
    */
   public run(thread: JVMThread): void {
-    trace(`\nT${thread.getRef()} D${thread.getStackTrace().length} Running ${this.method.getFullSignature()} [Native]:`);
-    if (this.method.getFullSignature().indexOf('forName') !== -1) {
-      // console.log("@stu", thread.getStackTrace().);
-    }
+    !RELEASE && trace(`\nT${thread.getRef()} D${thread.getStackTrace().length} Running ${this.method.getFullSignature()} [Native]:`);
+
     var rv: any = this.nativeMethod.apply(null, this.method.convertArgs(thread, this.args));
     // Ensure thread is running, and we are the running method.
     if (thread.getStatus() === ThreadStatus.RUNNABLE && thread.currentMethod() === this.method) {
@@ -870,7 +868,7 @@ export class JVMThread implements Thread {
           // Sanity check. Should never really occur.
           maxMethodResumes = 10;
         }
-        vtrace(`T${this.getRef()} Quantum over. Method resumes: Max ${maxMethodResumes} Est ${estMaxMethodResumes} Samples ${numSamples}`);
+        !RELEASE && vtrace(`T${this.getRef()} Quantum over. Method resumes: Max ${maxMethodResumes} Est ${estMaxMethodResumes} Samples ${numSamples}`);
         numSamples++;
         // Tell the scheduler that our quantum is over.
         this.tpool.quantumOver(this);
@@ -927,7 +925,7 @@ export class JVMThread implements Thread {
     var jvmNewStatus: number = 0, oldStatus = this.status;
 
     if (logLevel === LogLevel.VTRACE) {
-      vtrace(`\nT${this.getRef()} ${ThreadStatus[oldStatus]} => ${ThreadStatus[newStatus]}`);
+      !RELEASE && vtrace(`\nT${this.getRef()} ${ThreadStatus[oldStatus]} => ${ThreadStatus[newStatus]}`);
     }
     assert(validateThreadTransition(oldStatus, newStatus), `Invalid thread transition: ${ThreadStatus[oldStatus]} => ${ThreadStatus[newStatus]}`);
 
@@ -1004,16 +1002,16 @@ export class JVMThread implements Thread {
       this.setStatus(ThreadStatus.ASYNC_WAITING);
       // Only applicable if it's not an early death, e.g. before VM bootup.
       if (this.jvm.hasVMBooted()) {
-        trace(`T${this.getRef()} Exiting.`);
+        !RELEASE && trace(`T${this.getRef()} Exiting.`);
         var phase2 = () => {
-            trace(`T${this.getRef()} Entered exit monitor.`);
+            !RELEASE && trace(`T${this.getRef()} Entered exit monitor.`);
             // Exit.
             this.jvmThreadObj["exit()V"](this, null, (e?) => {
               // Notify everyone.
               monitor.notifyAll(this);
               // Exit monitor.
               monitor.exit(this);
-              trace(`T${this.getRef()} Terminated.`);
+              !RELEASE && trace(`T${this.getRef()} Terminated.`);
               // Actually become terminated.
               this.rawSetStatus(ThreadStatus.TERMINATED);
             });
@@ -1024,7 +1022,7 @@ export class JVMThread implements Thread {
           phase2();
         }
       } else {
-        trace(`T${this.getRef()} Not exiting; VM is still booting.`);
+        !RELEASE && trace(`T${this.getRef()} Not exiting; VM is still booting.`);
       }
     } else {
       // There are things on the stack. This exit is occuring before the stack has emptied.
@@ -1032,7 +1030,7 @@ export class JVMThread implements Thread {
       while (this.stack.length > 0) {
         this.stack.pop();
       }
-      trace(`T${this.getRef()} Terminated.`);
+      !RELEASE && trace(`T${this.getRef()} Terminated.`);
       this.rawSetStatus(ThreadStatus.TERMINATED);
     }
   }
@@ -1085,22 +1083,14 @@ export class JVMThread implements Thread {
       var frameCast = <BytecodeStackFrame> frame;
       if (frame.type === StackFrameType.BYTECODE) {
         // This line will be preceded by a line that prints the method, so can be short n' sweet.
-        trace(`  Returning: ${debug_var(rv)}`);
+        !RELEASE && trace(`  Returning: ${debug_var(rv)}`);
       }
 
-      trace(`\nT${this.getRef()} D${this.getStackTrace().length + 1} Returning value from ${frameCast.method.getFullSignature()} [${frameCast.method.accessFlags.isNative() ? 'Native' : 'Bytecode'}]: ${debug_var(rv)}`);
-      try {
-        validateReturnValue(this, frameCast.method,
-          frameCast.method.returnType, this.bsCl,
-          frameCast.method.cls.getLoader(), rv, rv2)
-      } catch(e) {
-        // @stu forgot why I added this lol
-        // I think this might have been what crashed until I added | 0 to the IP address?
-        // console.log(`Invalid return value for method ${frameCast.method.getFullSignature()}`);
-        console.log("uh oh ", this.getPrintableStackTrace());
-        console.log(e);
-        throw e;
-      }
+      !RELEASE && trace(`\nT${this.getRef()} D${this.getStackTrace().length + 1} Returning value from ${frameCast.method.getFullSignature()} [${frameCast.method.accessFlags.isNative() ? 'Native' : 'Bytecode'}]: ${debug_var(rv)}`);
+      
+      validateReturnValue(this, frameCast.method,
+        frameCast.method.returnType, this.bsCl,
+        frameCast.method.cls.getLoader(), rv, rv2);
       
     }
     // Tell the top of the stack that this RV is waiting for it.
@@ -1272,6 +1262,11 @@ function validateThreadTransition(oldStatus: ThreadStatus, newStatus: ThreadStat
  * checks.
  */
 function validateReturnValue(thread: JVMThread, method: Method, returnType: string, bsCl: BootstrapClassLoader, cl: ClassLoader, rv1: any, rv2: any): boolean {
+  // @stu this thing is slow
+  if (RELEASE) {
+    return true;
+  }
+  
   // invokeBasic is typed with an Object return value, but it can return any
   // damn type it wants, primitive or no.
   if (method.fullSignature === "java/lang/invoke/MethodHandle/invokeBasic([Ljava/lang/Object;)Ljava/lang/Object;") {

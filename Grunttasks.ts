@@ -397,7 +397,7 @@ export function setup(grunt: IGrunt) {
       'robocode': {
         files: [{
           expand: true,
-          cwd: "build/fast-dev",
+          cwd: "build/release",
           src: ["*.js", "*.js.map", "natives/**/*.js*", "vendor/**/*"],
           dest: "docs/robocode/doppio"
         }, {
@@ -838,7 +838,7 @@ export function setup(grunt: IGrunt) {
     ]);
   
   grunt.registerTask('robocode',
-    ['fast-dev',
+    ['release',
       'copy:robocode',
       'listings:robocode',
       "connect:robocode"

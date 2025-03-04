@@ -15,6 +15,7 @@ import assert from './assert';
 import {Method} from './methods';
 import * as JVMTypes from '../includes/JVMTypes';
 
+declare var RELEASE: boolean;
 /**
  * Interface for individual opcode implementations.
  */
@@ -1534,7 +1535,7 @@ export class Opcodes {
     thread.setStatus(ThreadStatus.ASYNC_WAITING);
     callSiteSpecifier.constructCallSiteObject(thread, frame.getLoader(), frame.method.cls, pc, (status: boolean) => {
       if (status) {
-        assert(typeof(callSiteSpecifier.getCallSiteObject(pc)[0].vmtarget) === 'function', "MethodName should be resolved...");
+        !RELEASE && assert(typeof(callSiteSpecifier.getCallSiteObject(pc)[0].vmtarget) === 'function', "MethodName should be resolved...");
         code[pc] = OpCode.INVOKEDYNAMIC_FAST;
         // Resume and rerun fast opcode.
         thread.setStatus(ThreadStatus.RUNNABLE);
@@ -1600,7 +1601,7 @@ export class Opcodes {
     if (!isNull(thread, frame, obj)) {
       var args = opStack.sliceFromTop(paramSize);
       opStack.dropFromTop(paramSize + 1);
-      assert(typeof (<any> obj)[methodReference.fullSignature] === 'function', `Resolved method ${methodReference.fullSignature} isn't defined?!`, thread);
+      !RELEASE && assert(typeof (<any> obj)[methodReference.fullSignature] === 'function', `Resolved method ${methodReference.fullSignature} isn't defined?!`, thread);
       (<any> obj)[methodReference.fullSignature](thread, args);
       frame.returnToThreadLoop = true;
     }
@@ -1611,8 +1612,8 @@ export class Opcodes {
     var methodReference = <MethodReference | InterfaceMethodReference> frame.method.cls.constantPool.get(code.readUInt16BE(pc + 1)),
       opStack = frame.opStack, paramSize = methodReference.paramWordSize,
       args = opStack.sliceAndDropFromTop(paramSize);
-    assert(methodReference.jsConstructor != null, "jsConstructor is missing?!");
-    assert(typeof(methodReference.jsConstructor[methodReference.fullSignature]) === 'function', "Resolved method isn't defined?!");
+    !RELEASE && assert(methodReference.jsConstructor != null, "jsConstructor is missing?!");
+    !RELEASE && assert(typeof(methodReference.jsConstructor[methodReference.fullSignature]) === 'function', "Resolved method isn't defined?!");
     methodReference.jsConstructor[methodReference.fullSignature](thread, args);
     frame.returnToThreadLoop = true;
   }
@@ -1625,7 +1626,7 @@ export class Opcodes {
       obj: JVMTypes.java_lang_Object = opStack.fromTop(count);
     if (!isNull(thread, frame, obj)) {
       // Use the class of the *object*.
-      assert(typeof (<any> obj)[methodReference.signature] === 'function', `Resolved method ${methodReference.signature} isn't defined?!`);
+      !RELEASE && assert(typeof (<any> obj)[methodReference.signature] === 'function', `Resolved method ${methodReference.signature} isn't defined?!`);
       (<any> obj)[methodReference.signature](thread, opStack.sliceFromTop(count));
       opStack.dropFromTop(count + 1);
       frame.returnToThreadLoop = true;
