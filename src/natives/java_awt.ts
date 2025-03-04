@@ -149,9 +149,7 @@ export default function (): any {
     if (src.length !== dst.length) {
       throw new Error("byteCopy expected same length buffers")
     }
-    for (let i=0; i<src.length; i++) {
-      dst[i] = src[i];
-    }
+    dst.set(src);
   }
 
   function setFont(ctx: CanvasRenderingContext2D, font: JVMTypes.java_awt_Font) {
@@ -238,6 +236,7 @@ export default function (): any {
 
 
     public static 'writeARGB(Ljava/awt/image/BufferedImage;)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, image: JVMTypes.java_awt_image_BufferedImage): void {
+      let imageType = image['java/awt/image/BufferedImage/imageType'];
       let buffer = image['java/awt/image/BufferedImage/raster']['java/awt/image/Raster/dataBuffer'];
       let dstBuf = (buffer as any as DataBufferInt)['java/awt/image/DataBufferInt/data'].array;
       let dst = new Uint8Array(dstBuf.buffer, dstBuf.byteOffset, dstBuf.byteLength);
@@ -245,7 +244,7 @@ export default function (): any {
       let {canvas} = javaThis[g2dCanvas];
       let src = javaThis.ctx.getImageData(0,0, canvas.width, canvas.height).data;
 
-      let res = convertFromRGBA(TYPE_INT_ARGB, src);
+      let res = convertFromRGBA(''+imageType, src);
       byteCopy(res, dst);
     }
     public static 'clearRect(IIII)V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D, x: number, y: number, width: number, height: number): void {
@@ -313,16 +312,16 @@ export default function (): any {
         return true;
       }
 
-      let old = javaThis.ctx.strokeStyle;
-      javaThis.ctx.strokeStyle = 'white';
-      classes_awt_CanvasGraphics2D['drawOval(IIII)V'](thread, javaThis, x,y,w,h);
-      javaThis.ctx.strokeStyle = old;
-
       let imgData = new ImageData(dst, width, height);
       thread.setStatus(ThreadStatus.ASYNC_WAITING);
       (window as any).createImageBitmap(imgData).then((bitmap: any) => {
         try {
           javaThis.ctx.drawImage(bitmap, x, y, w, h);
+
+          // let old = javaThis.ctx.strokeStyle;
+          // javaThis.ctx.strokeStyle = 'red';
+          // classes_awt_CanvasGraphics2D['drawOval(IIII)V'](thread, javaThis, x,y,w,h);
+          // javaThis.ctx.strokeStyle = old;
   
           thread.asyncReturn(1);
         } finally {
