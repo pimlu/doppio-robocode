@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simple DoppioJVM Example</title>
+    <script type="text/javascript" src="doppio/browserfs.min.js"></script>
+    <script type="text/javascript" src="doppio/doppio.js"></script>
+    <script type="text/javascript">
+      
+      // Wrap in a closure; don't pollute the global namespace.
+      (async function() {
+
+        let loaded = new Promise(res => {
+          window.addEventListener('load', () => res());
+        });
+        var mfs = new BrowserFS.FileSystem.MountableFileSystem(),
+            fs = BrowserFS.BFSRequire('fs'),
+            process = BrowserFS.BFSRequire('process');
+        BrowserFS.initialize(mfs);
+        // Temporary storage.
+        mfs.mount('/tmp', new BrowserFS.FileSystem.InMemory());
+        // 10MB of writable storage
+        // Use BrowserFS's IndexedDB file system for more storage.
+        mfs.mount('/home', new BrowserFS.FileSystem.InMemory());
+
+        let sysTmp = new BrowserFS.FileSystem.InMemory();
+
+        let system = await new Promise((res, rej) => {
+          let fs = new BrowserFS.FileSystem.XmlHttpRequest.FromURL('listings.json', (e, data) => {
+            if (e) {
+              rej(e);
+            } else {
+              res(data);
+            }
+          });
+        });
+
+        let overlayfs = await new Promise((res, rej) => {
+          let fs = new BrowserFS.FileSystem.OverlayFS(sysTmp, system);
+          fs.initialize(e => {
+            if (e) rej(e);
+            else res(fs);
+          });
+        })
+        // The first argument is the filename of the listings file
+        // The second argument is the relative URL to the folder containing the listings file
+        mfs.mount('/sys', overlayfs);
+        // mfs.mount('/sys', system);
+
+        window._mfs = mfs;
+        process.chdir('/sys/robocode-extract');
+
+        loaded.then(function() {
+          var textarea = document.getElementById('console');
+          var process = BrowserFS.BFSRequire('process');
+          process.initializeTTYs();
+          var stdoutBuffer = '';
+          process.stdout.on('data', function(data) {
+            stdoutBuffer += data.toString();
+            var newlineIdx;
+            while ((newlineIdx = stdoutBuffer.indexOf("\n")) > -1) {
+              textarea.innerText += stdoutBuffer.slice(0, newlineIdx + 1);
+              stdoutBuffer = stdoutBuffer.slice(newlineIdx + 1);
+            }
+          });
+          var stderrBuffer = '';
+          process.stderr.on('data', function(data) {
+            stderrBuffer += data.toString();
+            var newlineIdx;
+            while ((newlineIdx = stderrBuffer.indexOf("\n")) > -1) {
+              textarea.innerText += stderrBuffer.slice(0, newlineIdx + 1);
+              stderrBuffer = stderrBuffer.slice(newlineIdx + 1);
+            }
+          });
+        });
+
+        // doppio -Dawt.toolkit=sun.awt.HToolkit -cp 'libs/*:robots' -jar libs/robocode.jar -battle 'battles/intro.battle' -nosound
+        let RE = '/sys/robocode-extract';
+        setTimeout(function() {
+          Doppio.VM.CLI(
+            ['-Dawt.toolkit=classes.awt.BrowserToolkit',
+            '-cp', `libs/*:robots`,
+            '-jar', `libs/robocode.jar`,
+            '-battle', `battles/druss.battle`,
+            '-nosound'],
+          {
+            doppioHomePath: '/sys/doppio'
+          });
+        }, 5);
+      })();
+    </script>
+    <style>
+      html, body {
+        background: #ddd;
+      }
+      #canvas-box {
+        width: 800px;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+      }
+      #console {
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas-box">
+      Loading Robocode...
+    </div>
+    <div id="console"></div>
+  </body>
+</html>
