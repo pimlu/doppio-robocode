@@ -36,7 +36,13 @@ export default function (): any {
     }
 
     public static 'mount()V'(thread: JVMThread, javaThis: classes_awt_BrowserCanvas): void {
-      document.body.appendChild(javaThis.canvas);
+      let target = document.body;
+      let box = document.getElementById('canvas-box');
+      if (box) {
+        box.innerHTML = '';
+        target = box;
+      }
+      target.appendChild(javaThis.canvas);
     }
     public static 'width()I'(thread: JVMThread, javaThis: classes_awt_BrowserCanvas): number {
       return javaThis.canvas.width;
@@ -178,7 +184,7 @@ export default function (): any {
     'classes/awt/CanvasGraphics2D/postDrawSync': JVMTypes.java_lang_Runnable;
 
     public static 'init()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
-      javaThis.ctx = javaThis[g2dCanvas].canvas.getContext('2d');
+      javaThis.ctx = javaThis[g2dCanvas].canvas.getContext('2d', {willReadFrequently: true});
     }
 
     public static 'beginPath()V'(thread: JVMThread, javaThis: classes_awt_CanvasGraphics2D): void {
@@ -367,7 +373,7 @@ export default function (): any {
 
     public static 'init()V'(thread: JVMThread, javaThis: classes_awt_BrowserFontMetrics): void {
       javaThis.canvas = document.createElement('canvas');
-      let ctx = javaThis.canvas.getContext('2d');;
+      let ctx = javaThis.canvas.getContext('2d');
       javaThis.ctx = ctx;
       setFont(ctx, javaThis['java/awt/FontMetrics/font']);
 

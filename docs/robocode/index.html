@@ -20,7 +20,7 @@
         mfs.mount('/tmp', new BrowserFS.FileSystem.InMemory());
         // 10MB of writable storage
         // Use BrowserFS's IndexedDB file system for more storage.
-        mfs.mount('/home', new BrowserFS.FileSystem.LocalStorage());
+        mfs.mount('/home', new BrowserFS.FileSystem.InMemory());
 
         let sysTmp = new BrowserFS.FileSystem.InMemory();
 
@@ -58,7 +58,7 @@
             stdoutBuffer += data.toString();
             var newlineIdx;
             while ((newlineIdx = stdoutBuffer.indexOf("\n")) > -1) {
-              textarea.value += stdoutBuffer.slice(0, newlineIdx + 1);
+              textarea.innerText += stdoutBuffer.slice(0, newlineIdx + 1);
               stdoutBuffer = stdoutBuffer.slice(newlineIdx + 1);
             }
           });
@@ -67,16 +67,9 @@
             stderrBuffer += data.toString();
             var newlineIdx;
             while ((newlineIdx = stderrBuffer.indexOf("\n")) > -1) {
-              textarea.value += stderrBuffer.slice(0, newlineIdx + 1);
+              textarea.innerText += stderrBuffer.slice(0, newlineIdx + 1);
               stderrBuffer = stderrBuffer.slice(newlineIdx + 1);
             }
-          });
-
-          var stdin = document.getElementById('stdin');
-          document.getElementById('stdinButton').addEventListener('click', function(ev) {
-            ev.preventDefault();
-            process.stdin.write(stdin.value + "\n");
-            stdin.value = '';
           });
         });
 
@@ -96,13 +89,26 @@
       })();
     </script>
     <style>
-      html, body, textarea {
-        background: #777;
+      html, body {
+        background: #ddd;
+      }
+      #canvas-box {
+        width: 800px;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+      }
+      #console {
+        font-family: monospace;
       }
     </style>
   </head>
   <body>
-    <textarea id="console" cols="120" rows="30"></textarea><br />
-    <input id="stdin" /><button id="stdinButton">Send to App</button>
+    <div id="canvas-box">
+      Loading Robocode...
+    </div>
+    <div id="console"></div>
   </body>
 </html>
